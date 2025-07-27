@@ -4,7 +4,8 @@
   "description": "Daily newsletter app that surfaces the latest single-use-app trends - automated with Vercel",
   "main": "index.js",
   "scripts": {
-    "dev": "vercel dev",
+    "dev": "next dev",
+    "dev:vercel": "vercel dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

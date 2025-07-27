@@ -1,7 +1,7 @@
 {
   "name": "launch-brief",
   "version": "1.0.0",
-  "description": "Daily newsletter app that surfaces the latest single-use-app trends",
+  "description": "Daily newsletter app that surfaces the latest single-use-app trends - automated with Vercel",
   "main": "index.js",
   "scripts": {
     "dev": "vercel dev",

@@ -1,0 +1,47 @@
+{
+  "name": "launch-brief",
+  "version": "1.0.0",
+  "description": "Daily newsletter app that surfaces the latest single-use-app trends",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "googleapis": "^126.0.1",
+    "openai": "^4.20.1",
+    "@sendgrid/mail": "^8.1.0",
+    "cheerio": "^1.0.0-rc.12",
+    "axios": "^1.6.0",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^5.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^14.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/doubleflannel/launch-brief-v1.git"
+  },
+  "keywords": [
+    "newsletter",
+    "automation",
+    "vercel",
+    "nextjs",
+    "cron"
+  ],
+  "author": "",
+  "license": "MIT"
+}

@@ -1,0 +1,27 @@
+{
+  "functions": {
+    "pages/api/scrape.ts": {
+      "maxDuration": 300
+    },
+    "pages/api/summarise.ts": {
+      "maxDuration": 300
+    },
+    "pages/api/send.ts": {
+      "maxDuration": 60
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/scrape",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/summarise", 
+      "schedule": "30 6 * * *"
+    },
+    {
+      "path": "/api/send",
+      "schedule": "0 7 * * *"
+    }
+  ]
+}

@@ -122,8 +122,8 @@ export default function Dashboard() {
         </header>
 
         <div className={styles.grid}>
-          {/* Pipeline Control */}
-          <div className={styles.card}>
+          {/* Pipeline Control - 1/3 width */}
+          <div className={`${styles.card} ${styles.pipelineCard}`}>
             <h2>📊 Pipeline Control</h2>
             <div className={styles.pipeline}>
               <div className={styles.step}>
@@ -182,8 +182,8 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {/* Activity Logs - Expanded */}
-          <div className={`${styles.card} ${styles.logsExpanded}`}>
+          {/* Activity Logs - 2/3 width */}
+          <div className={`${styles.card} ${styles.logsCard}`}>
             <h2>📝 Activity Logs</h2>
             <div className={styles.logs}>
               {logs.length === 0 ? (
@@ -211,8 +211,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Newsletter Preview */}
-          <div className={styles.card}>
+          {/* Newsletter Preview - 2/3 width */}
+          <div className={`${styles.card} ${styles.newsletterCard}`}>
             <h2>📧 Latest Newsletter</h2>
             <div className={styles.newsletter}>
               {lastNewsletter ? (
@@ -227,8 +227,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* System Status - Moved to Bottom */}
-          <div className={styles.card}>
+          {/* System Status - 1/3 width */}
+          <div className={`${styles.card} ${styles.statusCard}`}>
             <h2>⚡ System Status</h2>
             <div className={styles.status}>
               <div className={styles.statusItem}>

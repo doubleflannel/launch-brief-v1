@@ -1,15 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/scrape",
-      "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/summarise", 
-      "schedule": "30 6 * * *"
-    },
-    {
-      "path": "/api/send",
+      "path": "/api/daily-pipeline",
       "schedule": "0 7 * * *"
     }
   ]

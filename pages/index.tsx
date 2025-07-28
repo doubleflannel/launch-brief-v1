@@ -13,6 +13,9 @@ interface LogEntry {
   endpoint: string;
   status: 'success' | 'error';
   message: string;
+  sessionId?: string;
+  isMainEntry?: boolean;
+  details?: string[];
 }
 
 export default function Dashboard() {
@@ -25,14 +28,18 @@ export default function Dashboard() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [lastNewsletter, setLastNewsletter] = useState<string>('');
 
-  const addLog = (endpoint: string, status: 'success' | 'error', message: string) => {
+  const addLog = (endpoint: string, status: 'success' | 'error', message: string, details?: string[]) => {
+    const sessionId = Date.now().toString();
     const newLog: LogEntry = {
       timestamp: new Date().toLocaleString(),
       endpoint,
       status,
-      message
+      message,
+      sessionId,
+      isMainEntry: true,
+      details: details || []
     };
-    setLogs(prev => [newLog, ...prev.slice(0, 9)]); // Keep last 10 logs
+    setLogs(prev => [newLog, ...prev.slice(0, 19)]); // Keep last 20 sessions
   };
 
   const runAPI = async (endpoint: string) => {
@@ -48,25 +55,17 @@ export default function Dashboard() {
       
       if (response.ok) {
         setApiStatus(prev => ({ ...prev, [endpoint]: 'success' }));
-        addLog(endpoint, 'success', data.message || 'Operation completed successfully');
         
         // If it's summarise, try to get the newsletter content
         if (endpoint === 'summarise' && data.newsletter) {
           setLastNewsletter(data.newsletter);
         }
         
-        // If it's scrape, show detailed logs
+        // If it's scrape, group the detailed logs
         if (endpoint === 'scrape' && data.detailedLogs && data.detailedLogs.length > 0) {
-          // Add each scraped item as a separate log entry
-          data.detailedLogs.forEach((logEntry: string) => {
-            const detailLog: LogEntry = {
-              timestamp: new Date().toLocaleString(),
-              endpoint: 'scrape-detail',
-              status: 'success',
-              message: logEntry
-            };
-            setLogs(prev => [detailLog, ...prev.slice(0, 49)]); // Keep last 50 logs
-          });
+          addLog(endpoint, 'success', data.message || 'Operation completed successfully', data.detailedLogs);
+        } else {
+          addLog(endpoint, 'success', data.message || 'Operation completed successfully');
         }
       } else {
         throw new Error(data.error || 'API call failed');
@@ -183,29 +182,8 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {/* System Status */}
-          <div className={styles.card}>
-            <h2>⚡ System Status</h2>
-            <div className={styles.status}>
-              <div className={styles.statusItem}>
-                <span>Next Scheduled Run:</span>
-                <span className={styles.time}>Tomorrow 7:00 AM ET</span>
-              </div>
-              <div className={styles.statusItem}>
-                <span>Environment:</span>
-                <span className={styles.env}>{process.env.NODE_ENV || 'development'}</span>
-              </div>
-              <div className={styles.statusItem}>
-                <span>Last Activity:</span>
-                <span className={styles.time}>
-                  {logs.length > 0 ? logs[0].timestamp : 'No activity yet'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Activity Logs */}
-          <div className={styles.card}>
+          {/* Activity Logs - Expanded */}
+          <div className={`${styles.card} ${styles.logsExpanded}`}>
             <h2>📝 Activity Logs</h2>
             <div className={styles.logs}>
               {logs.length === 0 ? (
@@ -213,9 +191,20 @@ export default function Dashboard() {
               ) : (
                 logs.map((log, index) => (
                   <div key={index} className={`${styles.logEntry} ${styles[log.status]}`}>
-                    <div className={styles.logTime}>{log.timestamp}</div>
-                    <div className={styles.logEndpoint}>{log.endpoint}</div>
+                    <div className={styles.logHeader}>
+                      <div className={styles.logTime}>{log.timestamp}</div>
+                      <div className={styles.logEndpoint}>{log.endpoint}</div>
+                    </div>
                     <div className={styles.logMessage}>{log.message}</div>
+                    {log.details && log.details.length > 0 && (
+                      <div className={styles.logDetails}>
+                        {log.details.map((detail, detailIndex) => (
+                          <div key={detailIndex} className={styles.logDetailItem}>
+                            → {detail}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))
               )}
@@ -235,6 +224,27 @@ export default function Dashboard() {
                   No newsletter generated yet. Run the summarise step to see content here.
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* System Status - Moved to Bottom */}
+          <div className={styles.card}>
+            <h2>⚡ System Status</h2>
+            <div className={styles.status}>
+              <div className={styles.statusItem}>
+                <span>Next Scheduled Run:</span>
+                <span className={styles.time}>Tomorrow 7:00 AM ET</span>
+              </div>
+              <div className={styles.statusItem}>
+                <span>Environment:</span>
+                <span className={styles.env}>{process.env.NODE_ENV || 'development'}</span>
+              </div>
+              <div className={styles.statusItem}>
+                <span>Last Activity:</span>
+                <span className={styles.time}>
+                  {logs.length > 0 ? logs[0].timestamp : 'No activity yet'}
+                </span>
+              </div>
             </div>
           </div>
         </div>

@@ -11,6 +11,23 @@ interface ScrapedItem {
   timestamp: string;
 }
 
+// Helper function to format date to ET timezone
+function formatToET(date: Date): string {
+  return date.toLocaleString('en-US', {
+    timeZone: 'America/New_York',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+}
+
+// Helper function to get first 2 words of title
+function getFirstTwoWords(title: string): string {
+  return title.split(' ').slice(0, 2).join(' ');
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -23,6 +40,7 @@ export default async function handler(
     console.log('🔍 Starting real scraping process...');
     
     const allItems: ScrapedItem[] = [];
+    const detailedLogs: string[] = [];
     
     // 1. Scrape Hacker News
     console.log('📰 Scraping Hacker News...');
@@ -36,14 +54,16 @@ export default async function handler(
           const story = storyResponse.data;
           
           if (story && story.title) {
-            allItems.push({
+            const item = {
               title: story.title,
               url: story.url || `https://news.ycombinator.com/item?id=${id}`,
               score: story.score || 0,
               comments: story.descendants || 0,
               source: 'Hacker News',
               timestamp: new Date().toISOString()
-            });
+            };
+            allItems.push(item);
+            detailedLogs.push(`${getFirstTwoWords(item.title)} | ${item.source} | ${formatToET(new Date())}`);
           }
         } catch (itemError) {
           console.warn('Failed to fetch HN story:', id);
@@ -64,14 +84,16 @@ export default async function handler(
       const posts = redditResponse.data.data.children;
       for (const post of posts) {
         const data = post.data;
-        allItems.push({
+        const item = {
           title: data.title,
           url: data.url.startsWith('/') ? `https://reddit.com${data.url}` : data.url,
           score: data.score || 0,
           comments: data.num_comments || 0,
           source: 'r/vibecoding',
           timestamp: new Date().toISOString()
-        });
+        };
+        allItems.push(item);
+        detailedLogs.push(`${getFirstTwoWords(item.title)} | ${item.source} | ${formatToET(new Date())}`);
       }
       console.log(`✅ r/vibecoding: ${allItems.filter(item => item.source === 'r/vibecoding').length} items`);
     } catch (error) {
@@ -88,14 +110,16 @@ export default async function handler(
       const posts = redditResponse.data.data.children;
       for (const post of posts) {
         const data = post.data;
-        allItems.push({
+        const item = {
           title: data.title,
           url: data.url.startsWith('/') ? `https://reddit.com${data.url}` : data.url,
           score: data.score || 0,
           comments: data.num_comments || 0,
           source: 'r/solopreneur',
           timestamp: new Date().toISOString()
-        });
+        };
+        allItems.push(item);
+        detailedLogs.push(`${getFirstTwoWords(item.title)} | ${item.source} | ${formatToET(new Date())}`);
       }
       console.log(`✅ r/solopreneur: ${allItems.filter(item => item.source === 'r/solopreneur').length} items`);
     } catch (error) {
@@ -104,14 +128,16 @@ export default async function handler(
 
     // 4. Product Hunt (simplified - they require auth for full API)
     console.log('🚀 Adding Product Hunt placeholder...');
-    allItems.push({
+    const phItem = {
       title: 'Product Hunt Daily - Check manually',
       url: 'https://www.producthunt.com/',
       score: 0,
       comments: 0,
       source: 'Product Hunt',
       timestamp: new Date().toISOString()
-    });
+    };
+    allItems.push(phItem);
+    detailedLogs.push(`${getFirstTwoWords(phItem.title)} | ${phItem.source} | ${formatToET(new Date())}`);
 
     // 5. Save to Google Sheets
     console.log('💾 Saving to Google Sheets...');
@@ -188,6 +214,7 @@ export default async function handler(
       message: `Successfully scraped ${summary.totalItems} real items from ${summary.sources.length} sources`,
       data: summary,
       items: allItems.slice(0, 5), // Show first 5 items as preview
+      detailedLogs: detailedLogs, // Show all scraped items with first 2 words
       timestamp: summary.timestamp
     });
   } catch (error) {

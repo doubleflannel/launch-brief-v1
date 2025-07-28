@@ -83,6 +83,6 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
-# Documentation (local development only)
+# Documentation and sensitive files (local development only)
 README.md
-build-progress/
+local gitignore/

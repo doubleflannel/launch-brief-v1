@@ -54,6 +54,20 @@ export default function Dashboard() {
         if (endpoint === 'summarise' && data.newsletter) {
           setLastNewsletter(data.newsletter);
         }
+        
+        // If it's scrape, show detailed logs
+        if (endpoint === 'scrape' && data.detailedLogs && data.detailedLogs.length > 0) {
+          // Add each scraped item as a separate log entry
+          data.detailedLogs.forEach((logEntry: string) => {
+            const detailLog: LogEntry = {
+              timestamp: new Date().toLocaleString(),
+              endpoint: 'scrape-detail',
+              status: 'success',
+              message: logEntry
+            };
+            setLogs(prev => [detailLog, ...prev.slice(0, 49)]); // Keep last 50 logs
+          });
+        }
       } else {
         throw new Error(data.error || 'API call failed');
       }

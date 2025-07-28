@@ -34,9 +34,6 @@ export default async function handler(
       results.scrape = { error: 'Scraping failed' };
     }
 
-    // Wait 30 seconds between steps
-    await new Promise(resolve => setTimeout(resolve, 30000));
-
     // Step 2: Summarise
     console.log('🤖 Step 2: Generating newsletter...');
     try {
@@ -50,9 +47,6 @@ export default async function handler(
       console.error('❌ Newsletter generation failed:', error);
       results.summarise = { error: 'Newsletter generation failed' };
     }
-
-    // Wait 30 seconds between steps
-    await new Promise(resolve => setTimeout(resolve, 30000));
 
     // Step 3: Send
     console.log('📧 Step 3: Sending newsletter...');

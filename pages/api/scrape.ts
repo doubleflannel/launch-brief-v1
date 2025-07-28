@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
+import { google } from 'googleapis';
 
 interface ScrapedItem {
   title: string;
@@ -112,6 +113,62 @@ export default async function handler(
       timestamp: new Date().toISOString()
     });
 
+    // 5. Save to Google Sheets
+    console.log('💾 Saving to Google Sheets...');
+    try {
+      const serviceAccountKey = JSON.parse(process.env.GOOGLE_SA_KEY || '{}');
+      const auth = new google.auth.GoogleAuth({
+        credentials: serviceAccountKey,
+        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+      });
+
+      const sheets = google.sheets({ version: 'v4', auth });
+      const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+
+      // Prepare rows for Google Sheets
+      const rows = allItems.map(item => [
+        item.timestamp,
+        item.title,
+        item.url,
+        item.score || 0,
+        item.comments || 0,
+        item.source,
+        new Date().toISOString() // scraped_at
+      ]);
+
+      // Clear existing data and add headers
+      await sheets.spreadsheets.values.clear({
+        spreadsheetId,
+        range: 'raw_items!A:G',
+      });
+
+      // Add headers
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: 'raw_items!A1:G1',
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: [['timestamp', 'title', 'url', 'score', 'comments', 'source', 'scraped_at']]
+        },
+      });
+
+      // Add data
+      if (rows.length > 0) {
+        await sheets.spreadsheets.values.append({
+          spreadsheetId,
+          range: 'raw_items!A2:G',
+          valueInputOption: 'RAW',
+          requestBody: {
+            values: rows
+          },
+        });
+      }
+
+      console.log(`✅ Saved ${rows.length} items to Google Sheets`);
+    } catch (sheetError) {
+      console.error('❌ Google Sheets error:', sheetError);
+    }
+
     const summary = {
       totalItems: allItems.length,
       sources: ['Hacker News', 'r/vibecoding', 'r/solopreneur', 'Product Hunt'],
@@ -121,7 +178,8 @@ export default async function handler(
         'r/solopreneur': allItems.filter(item => item.source === 'r/solopreneur').length,
         'Product Hunt': allItems.filter(item => item.source === 'Product Hunt').length
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      savedToSheets: true
     };
     
     console.log('✅ Real scraping completed:', summary);
